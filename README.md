@@ -140,34 +140,18 @@ Todos os dados são armazenados **exclusivamente no seu navegador** via `localSt
 ---
 ## 🤝 Tecnologias Utilizadas
 |
- Tecnologia        
-|
- Uso                                 
-|
-|
--------------------
+ Este projeto foi realizado com o auxílio da IA Gemini 3.6 flash.                                  
 |
 -------------------------------------
 |
-|
- HTML5             
-|
- Estrutura semântica                 
-|
-|
- CSS3 (Vanilla)    
-|
- Design system, dark mode, animações 
-|
-|
- JavaScript (ES6+) 
-|
- Lógica, roteamento, LocalStorage    
-|
-|
- Google Fonts      
-|
- Tipografia (Plus Jakarta Sans)      
+| HTML5             
+| Estrutura semântica                 
+| CSS3 (Vanilla)    
+| Design system, dark mode, animações 
+| JavaScript (ES6+) 
+| Lógica, roteamento, LocalStorage    
+| Google Fonts      
+| Tipografia (Plus Jakarta Sans)      
 |
 ---
 ## 📄 Licença
