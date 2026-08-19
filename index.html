@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EstudoFlux – Plataforma de Organização de Estudos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root {
+  --bg:        #0f172a;
+  --bg2:       #1e293b;
+  --bg3:       #334155;
+  --card:      rgba(30,41,59,.80);
+  --border:    rgba(255,255,255,.10);
+  --border2:   rgba(255,255,255,.18);
+  --txt:       #f8fafc;
+  --txt2:      #94a3b8;
+  --txt3:      #64748b;
+  --accent:    #6366f1;
+  --accent2:   #8b5cf6;
+  --success:   #10b981;
+  --warn:      #f59e0b;
+  --danger:    #ef4444;
+  --info:      #06b6d4;
+  --night:     #a855f7;
+  --glow:      0 0 24px rgba(99,102,241,.40);
+  --sh:        0 4px 24px rgba(0,0,0,.35);
+  --r:         12px;
+  --r2:        8px;
+  --tr:        all .22s cubic-bezier(.4,0,.2,1);
+  --font:      'Plus Jakarta Sans', system-ui, sans-serif;
+}
+[data-theme="light"] {
+  --bg:#f1f5f9; --bg2:#fff; --bg3:#e2e8f0; --card:rgba(255,255,255,.88);
+  --border:#cbd5e1; --border2:#94a3b8;
+  --txt:#0f172a; --txt2:#475569; --txt3:#94a3b8;
+  --glow:0 0 14px rgba(99,102,241,.18); --sh:0 4px 20px rgba(0,0,0,.09);
+}
+/* ===== RESET ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--txt);line-height:1.55;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;transition:background .3s,color .3s}
+
+/* ===== LAYOUT ===== */
+.app{display:flex;min-height:100vh}
+
+/* ===== SIDEBAR ===== */
+.sidebar{width:256px;min-width:256px;background:var(--bg2);border-right:1px solid var(--border);padding:1.25rem .85rem;display:flex;flex-direction:column;justify-content:space-between;position:sticky;top:0;height:100vh;z-index:40;transition:var(--tr)}
+.brand{display:flex;align-items:center;gap:.75rem;padding:.25rem .5rem 1.25rem;border-bottom:1px solid var(--border)}
+.brand-icon{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:var(--glow)}
+.brand-name{font-size:1.2rem;font-weight:800;background:linear-gradient(90deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.02em}
+.nav{list-style:none;margin-top:1.1rem;display:flex;flex-direction:column;gap:.25rem}
+.nav li button{width:100%;display:flex;align-items:center;gap:.75rem;padding:.7rem .85rem;border:none;background:transparent;color:var(--txt2);font-size:.92rem;font-weight:600;border-radius:var(--r);cursor:pointer;transition:var(--tr);text-align:left;font-family:var(--font)}
+.nav li button:hover{background:rgba(255,255,255,.05);color:var(--txt)}
+.nav li.active button{background:linear-gradient(90deg,rgba(99,102,241,.18),rgba(139,92,246,.08));color:var(--accent);border-left:3px solid var(--accent)}
+.sidebar-foot{border-top:1px solid var(--border);padding-top:.9rem;display:flex;flex-direction:column;gap:.6rem}
+.theme-btn{display:flex;align-items:center;justify-content:space-between;width:100%;padding:.6rem .85rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--txt);font-size:.82rem;font-weight:700;cursor:pointer;transition:var(--tr);font-family:var(--font)}
+.theme-btn:hover{border-color:var(--accent)}
+
+/* ===== MAIN WRAPPER ===== */
+.main{flex:1;display:flex;flex-direction:column;overflow-y:auto}
+
+/* ===== STREAK ALERT BAR ===== */
+.alert-bar{background:linear-gradient(90deg,rgba(245,158,11,.13),rgba(239,68,68,.12));border-bottom:1px solid rgba(245,158,11,.3);padding:.6rem 1.5rem;display:flex;align-items:center;justify-content:space-between;font-size:.85rem;color:#fbbf24;gap:1rem}
+.alert-bar button{background:#f59e0b;color:#000;border:none;padding:.28rem .7rem;border-radius:6px;font-weight:800;cursor:pointer;font-size:.78rem;white-space:nowrap}
+
+/* ===== VIEW HEADER ===== */
+.vheader{padding:1.75rem 1.75rem .9rem;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem}
+.vheader h1{font-size:1.65rem;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.vheader p{color:var(--txt2);font-size:.875rem;margin-top:.25rem}
+.vactions{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+
+/* ===== VIEW CONTENT ===== */
+.vcontent{padding:0 1.75rem 3rem}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;padding:.6rem 1.15rem;border-radius:var(--r);font-size:.875rem;font-weight:700;border:1px solid transparent;cursor:pointer;transition:var(--tr);white-space:nowrap;font-family:var(--font)}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 3px 12px rgba(99,102,241,.30)}
+.btn-primary:hover{opacity:.9;box-shadow:0 5px 18px rgba(99,102,241,.42)}
+.btn-secondary{background:var(--bg3);color:var(--txt);border-color:var(--border)}
+.btn-secondary:hover{border-color:var(--txt2)}
+.btn-outline{background:transparent;color:var(--accent);border-color:var(--accent)}
+.btn-outline:hover{background:rgba(99,102,241,.1)}
+.btn-danger{background:rgba(239,68,68,.12);color:var(--danger);border-color:rgba(239,68,68,.25)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-success{background:rgba(16,185,129,.12);color:var(--success);border-color:rgba(16,185,129,.25)}
+.btn-success:hover{background:var(--success);color:#fff}
+.btn-sm{padding:.35rem .75rem;font-size:.8rem;border-radius:var(--r2)}
+.btn-xs{padding:.22rem .55rem;font-size:.72rem;border-radius:6px}
+
+/* ===== CARDS ===== */
+.card{background:var(--card);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:16px;padding:1.35rem;box-shadow:var(--sh);transition:var(--tr)}
+.card-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.1rem}
+.card-title{font-size:1.05rem;font-weight:700;display:flex;align-items:center;gap:.45rem}
+.chip{display:inline-flex;align-items:center;gap:.3rem;background:var(--bg3);color:var(--txt2);padding:.18rem .6rem;border-radius:999px;font-size:.75rem;font-weight:700}
+
+/* ===== DASHBOARD GRID ===== */
+.grid{display:grid;gap:1.35rem}
+.grid-12{grid-template-columns:repeat(12,1fr)}
+.gc-12{grid-column:span 12}
+.gc-8{grid-column:span 8}
+.gc-4{grid-column:span 4}
+.gc-6{grid-column:span 6}
+@media(max-width:1024px){.gc-8,.gc-4,.gc-6{grid-column:span 12}}
+
+/* ===== MOTIVATION BANNER ===== */
+.moti-banner{background:linear-gradient(135deg,rgba(99,102,241,.17),rgba(168,85,247,.13));border-color:rgba(139,92,246,.28);overflow:hidden;position:relative}
+.moti-quote{font-size:1.05rem;font-style:italic;font-weight:500;line-height:1.55}
+.streak-row{display:flex;align-items:center;gap:2rem;margin-top:1rem;flex-wrap:wrap}
+.sbox{display:flex;align-items:center;gap:.75rem}
+.flame{font-size:2.1rem;animation:pfl 2s ease-in-out infinite}
+@keyframes pfl{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+.snum{font-size:1.85rem;font-weight:900;line-height:1;color:#f59e0b}
+.slabel{font-size:.75rem;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+
+/* ===== SUBJECT ITEM CARD ===== */
+.sub-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem 1.1rem 1.1rem 1.4rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:.75rem;transition:var(--tr);position:relative;overflow:hidden}
+.sub-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--sc,var(--accent))}
+.sub-item:hover{box-shadow:var(--sh)}
+.sub-item h3{font-size:1rem;font-weight:700}
+.topic-chip{display:inline-flex;align-items:center;gap:.35rem;background:rgba(99,102,241,.13);color:#818cf8;padding:.22rem .6rem;border-radius:999px;font-size:.78rem;font-weight:600;margin-top:.35rem}
+.sub-item .actions{display:flex;gap:.4rem;flex-wrap:wrap}
+
+/* ===== NIGHT REVIEWS ===== */
+.night-card{border-left:4px solid var(--night) !important;background:linear-gradient(135deg,rgba(30,41,59,.9),rgba(88,28,135,.13)) !important}
+.night-chip{background:linear-gradient(90deg,#a855f7,#ec4899);color:#fff;padding:.18rem .55rem;border-radius:999px;font-size:.73rem;font-weight:700}
+.rev-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.9rem;display:flex;justify-content:space-between;align-items:center;gap:.75rem;margin-bottom:.45rem;transition:var(--tr)}
+.rev-item:hover{box-shadow:var(--sh)}
+.rev-done{opacity:.55;text-decoration:line-through;background:rgba(16,185,129,.08) !important;border-color:rgba(16,185,129,.25) !important}
+
+/* ===== WEEKLY GRID ===== */
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.85rem;margin-top:1.25rem}
+@media(max-width:1200px){.week-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.week-grid{grid-template-columns:1fr}}
+.day-col{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.9rem;min-height:360px;display:flex;flex-direction:column;transition:var(--tr)}
+.day-col.drag-over{border:2px dashed var(--accent);background:rgba(99,102,241,.08)}
+.day-col.today-col{border-color:rgba(99,102,241,.45);box-shadow:0 0 0 1px rgba(99,102,241,.25)}
+.day-hd{display:flex;justify-content:space-between;align-items:center;padding-bottom:.6rem;margin-bottom:.6rem;border-bottom:1px solid var(--border)}
+.day-name{font-weight:700;font-size:.88rem}
+.day-sub-list{flex:1;display:flex;flex-direction:column;gap:.5rem}
+.drag-card{background:var(--bg);border:1px solid var(--border);border-left:4px solid var(--sc,var(--accent));border-radius:var(--r2);padding:.65rem;font-size:.82rem;font-weight:700;cursor:grab;user-select:none;display:flex;justify-content:space-between;align-items:center;transition:var(--tr)}
+.drag-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.drag-card:active{cursor:grabbing;opacity:.7}
+.day-drop-zone{border:2px dashed var(--border);border-radius:var(--r2);min-height:70px;display:flex;align-items:center;justify-content:center;color:var(--txt3);font-size:.78rem;font-style:italic;transition:var(--tr)}
+
+/* ===== SUBJECTS MANAGER ===== */
+.subs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:1.25rem;margin-top:1.25rem}
+.sub-manage-card{background:var(--card);border:1px solid var(--border);border-top:4px solid var(--sc,var(--accent));border-radius:16px;padding:1.15rem;display:flex;flex-direction:column;gap:.75rem;transition:var(--tr)}
+.sub-manage-card:hover{box-shadow:var(--sh)}
+.mode-tag{font-size:.7rem;font-weight:800;padding:.18rem .5rem;border-radius:999px;text-transform:uppercase}
+.tag-s{background:rgba(6,182,212,.14);color:var(--info)}
+.tag-d{background:rgba(139,92,246,.14);color:var(--accent2)}
+.topic-list{list-style:none;max-height:150px;overflow-y:auto;margin-top:.35rem}
+.topic-list li{font-size:.8rem;padding:.25rem 0;display:flex;justify-content:space-between;align-items:center;border-bottom:1px dashed var(--border);gap:.35rem}
+.topic-list li span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topic-move-btn{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:.85rem;padding:0 .1rem;line-height:1;transition:var(--tr)}
+.topic-move-btn:hover{color:var(--txt)}
+.prog-bar-wrap{width:100%;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.prog-bar{height:100%;border-radius:3px;transition:width .4s ease}
+
+/* ===== HEATMAP ===== */
+.heatmap-wrap{overflow-x:auto;padding-bottom:.5rem}
+.heatmap-grid{display:grid;grid-template-rows:repeat(7,13px);grid-auto-flow:column;gap:4px}
+.hm-cell{width:13px;height:13px;border-radius:3px;background:var(--bg3);transition:var(--tr);cursor:default}
+.hm-cell:hover{outline:2px solid var(--accent)}
+.hm-cell[data-lv="1"]{background:rgba(16,185,129,.28)}
+.hm-cell[data-lv="2"]{background:rgba(16,185,129,.55)}
+.hm-cell[data-lv="3"]{background:rgba(16,185,129,.82)}
+.hm-cell[data-lv="4"]{background:#10b981;box-shadow:0 0 6px rgba(16,185,129,.55)}
+.hm-legend{display:flex;align-items:center;gap:.35rem;justify-content:flex-end;margin-top:.65rem;font-size:.73rem;color:var(--txt2)}
+
+/* ===== BADGES ===== */
+.badges-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:.85rem;margin-top:.85rem}
+.badge{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.9rem .5rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:.35rem;transition:var(--tr)}
+.badge.unlocked{border-color:rgba(99,102,241,.4);box-shadow:0 0 14px rgba(99,102,241,.18)}
+.badge.locked{opacity:.38;filter:grayscale(1)}
+.badge-ico{font-size:2.1rem}
+.badge-name{font-size:.8rem;font-weight:700}
+.badge-desc{font-size:.68rem;color:var(--txt3)}
+.badge-ok{font-size:.68rem;color:var(--success);font-weight:800;margin-top:.1rem}
+
+/* ===== CHECKPOINTS ===== */
+.chk-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;transition:var(--tr)}
+.chk-item:hover{border-color:var(--border2)}
+.chk-title{font-weight:700;font-size:.9rem}
+.chk-meta{font-size:.77rem;color:var(--txt2);margin-top:.18rem}
+
+/* ===== MODALS ===== */
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.82);backdrop-filter:blur(6px);z-index:100;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .22s ease}
+.overlay.open{opacity:1;pointer-events:auto}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:18px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.5);transform:translateY(20px);transition:transform .22s ease}
+.overlay.open .modal{transform:translateY(0)}
+.modal-hd{padding:1.1rem 1.35rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-hd h3{font-weight:800;font-size:1.05rem}
+.modal-close{background:none;border:none;color:var(--txt2);font-size:1.35rem;cursor:pointer;line-height:1;transition:var(--tr)}
+.modal-close:hover{color:var(--txt)}
+.modal-body{padding:1.35rem}
+.modal-ft{padding:.9rem 1.35rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.6rem}
+
+/* ===== FORMS ===== */
+.fgroup{margin-bottom:1.1rem}
+.flabel{display:block;font-size:.84rem;font-weight:700;margin-bottom:.35rem}
+.finput{width:100%;padding:.6rem .8rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--txt);font-family:var(--font);font-size:.875rem;transition:var(--tr)}
+.finput:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.18)}
+textarea.finput{min-height:95px;resize:vertical}
+select.finput{cursor:pointer}
+
+/* ===== TOASTS ===== */
+.toast-wrap{position:fixed;bottom:1.75rem;right:1.75rem;display:flex;flex-direction:column;gap:.65rem;z-index:200;pointer-events:none}
+.toast{background:var(--bg2);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:var(--r);padding:.78rem 1.15rem;color:var(--txt);font-size:.845rem;font-weight:700;box-shadow:var(--sh);display:flex;align-items:center;gap:.65rem;pointer-events:auto;animation:tin .3s cubic-bezier(.4,0,.2,1)}
+.toast.t-success{border-left-color:var(--success)}
+.toast.t-warn{border-left-color:var(--warn)}
+.toast.t-err{border-left-color:var(--danger)}
+@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ===== MOBILE NAV ===== */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);padding:.45rem .75rem;z-index:50;justify-content:space-around}
+.mob-nav button{background:none;border:none;color:var(--txt2);font-size:1.4rem;cursor:pointer;padding:.35rem;border-radius:var(--r2);transition:var(--tr)}
+.mob-nav button.active,.mob-nav button:hover{color:var(--accent)}
+@media(max-width:768px){.sidebar{display:none}.mob-nav{display:flex}.vheader{padding:1rem 1rem .6rem}.vcontent{padding:0 1rem 5rem}}
+
+/* ===== STAT BOXES ===== */
+.stat-box{text-align:center;padding:.75rem}
+.stat-num{font-size:2rem;font-weight:900;line-height:1}
+.stat-lbl{font-size:.82rem;color:var(--txt2);margin-top:.25rem}
+
+/* ===== MISC ===== */
+.empty-state{text-align:center;padding:2.5rem;color:var(--txt2)}
+.empty-state p{font-size:.9rem}
+.tag-paused{display:inline-flex;background:rgba(245,158,11,.13);color:#fbbf24;padding:.2rem .55rem;border-radius:var(--r2);font-size:.73rem;font-weight:800}
+.section-sep{margin:1.5rem 0;border:none;border-top:1px solid var(--border)}
+.review-interval-tag{font-size:.73rem;color:var(--night);font-weight:700;margin-top:.25rem}
+.color-picker-row{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.4rem}
+.color-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:var(--tr)}
+.color-dot.selected,.color-dot:hover{border-color:#fff;transform:scale(1.12)}
+input[type="color"]{width:34px;height:34px;border:none;border-radius:50%;cursor:pointer;padding:0;background:none}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div>
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-name">EstudoFlux</div>
+      </div>
+      <ul class="nav" id="sidebar-nav">
+        <li class="active" data-nav="dashboard">
+          <button data-view="dashboard">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+            Dashboard – Hoje
+          </button>
+        </li>
+        <li data-nav="weekly">
+          <button data-view="weekly">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Grade Semanal
+          </button>
+        </li>
+        <li data-nav="subjects">
+          <button data-view="subjects">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+            Matérias &amp; Assuntos
+          </button>
+        </li>
+        <li data-nav="reviews">
+          <button data-view="reviews">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            Revisões Espaçadas
+          </button>
+        </li>
+        <li data-nav="checkpoints">
+          <button data-view="checkpoints">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Checkpoints &amp; Planos
+          </button>
+        </li>
+        <li data-nav="stats">
+          <button data-view="stats">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Estatísticas &amp; Selos
+          </button>
+        </li>
+      </ul>
+    </div>
+    <div class="sidebar-foot">
+      <button class="theme-btn" id="theme-toggle">
+        <span id="theme-label">🌙 Modo Escuro</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- Streak Alert Bar -->
+    <div class="alert-bar" id="alert-bar" style="display:none">
+      <span>⚠️ Atenção: seu streak está em risco! Estude ou revise hoje para não perder a sequência.</span>
+      <button onclick="switchView('dashboard')">Estudar Agora →</button>
+    </div>
+
+    <!-- View Container -->
+    <main id="view-container"></main>
+  </div>
+</div>
+
+<!-- Mobile Nav -->
+<nav class="mob-nav" id="mob-nav">
+  <button data-view="dashboard" title="Dashboard">🏠</button>
+  <button data-view="weekly" title="Grade Semanal">📅</button>
+  <button data-view="subjects" title="Matérias">📚</button>
+  <button data-view="reviews" title="Revisões">🌙</button>
+  <button data-view="checkpoints" title="Checkpoints">💾</button>
+  <button data-view="stats" title="Estatísticas">📊</button>
+</nav>
+
+<!-- Toast Container -->
+<div class="toast-wrap" id="toast-container"></div>
+
+<script>
+/* =========================================================
+   STORE – State Management & LocalStorage
+   ========================================================= */
+const STORE_KEY   = 'ef_state_v2';
+const CHK_KEY     = 'ef_checkpoints_v2';
+
+const COLORS = ['#6366f1','#8b5cf6','#06b6d4','#f59e0b','#ef4444','#10b981','#ec4899','#f97316','#84cc16','#14b8a6'];
+
+const QUOTES = [
+  '"A constância transforma esforço em conquista extraordinária."',
+  '"Estudar 20 min por dia supera 5 horas em apenas um dia."',
+  '"A revisão de hoje é o conhecimento inabalável de amanhã."',
+  '"Grandes aprovações são construídas em pequenas sessões diárias."',
+  '"Conhecimento com disciplina é o melhor investimento do seu tempo."',
+  '"Mantenha o foco: seu streak é prova do seu compromisso!"',
+  '"O aprendizado espaçado fixa o saber na sua memória de longo prazo."',
+];
+
+const DAY_NAMES = ['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado','Domingo'];
+const DAY_SHORT = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+
+const DEFAULT_STATE = {
+  subjects: [
+    { id:'s1', name:'Matemática',       color:'#6366f1', mode:'detailed', status:'active', topics:[
+        {id:'t1',title:'Frações e Porcentagem',completed:false,lastStudied:null},
+        {id:'t2',title:'Equações do 2º Grau', completed:false,lastStudied:null},
+        {id:'t3',title:'Trigonometria',       completed:false,lastStudied:null},
+      ], topicIdx:0 },
+    { id:'s2', name:'Português',         color:'#8b5cf6', mode:'detailed', status:'active', topics:[
+        {id:'t4',title:'Concordância Verbal', completed:false,lastStudied:null},
+        {id:'t5',title:'Regência e Crase',    completed:false,lastStudied:null},
+      ], topicIdx:0 },
+    { id:'s3', name:'História',          color:'#06b6d4', mode:'simple',   status:'active', topics:[], topicIdx:0 },
+    { id:'s4', name:'Física',            color:'#f59e0b', mode:'detailed', status:'active', topics:[
+        {id:'t6',title:'Cinemática',          completed:false,lastStudied:null},
+        {id:'t7',title:'Leis de Newton',      completed:false,lastStudied:null},
+      ], topicIdx:0 },
+  ],
+  schedule: {
+    maxPerDay: 2,
+    days: { 0:['s1','s3'], 1:['s2','s4'], 2:['s1','s2'], 3:['s3','s4'], 4:['s1','s4'], 5:['s2'], 6:[] }
+  },
+  reviews: [],
+  logs: [],
+  stats: { streak:0, bestStreak:0, lastStudyDate:null, totalMin:0, nightTime:'22:00' },
+  achievements: [
+    {id:'a1',name:'Primeira Jornada', desc:'Conclua 1 sessão de estudo',       icon:'🚀', at:null},
+    {id:'a2',name:'Semana Imparável', desc:'7 dias seguidos de streak',         icon:'🔥', at:null},
+    {id:'a3',name:'Mestre da Retenção',desc:'15 revisões espaçadas concluídas', icon:'🧠', at:null},
+    {id:'a4',name:'Foco Noturno',     desc:'Revisar após as 22h',               icon:'🌙', at:null},
+    {id:'a5',name:'Lenda dos 30 Dias',desc:'30 dias consecutivos de streak',    icon:'🏆', at:null},
+  ]
+};
+
+/* ---- Store Class ---- */
+class Store {
+  constructor() {
+    this.state = this._load();
+    this.checkpoints = this._loadChk();
+    this._listeners = [];
+    if (!this.checkpoints.length) this.saveCheckpoint('Estado Inicial');
+  }
+
+  subscribe(fn) { this._listeners.push(fn); return () => { this._listeners = this._listeners.filter(l=>l!==fn); }; }
+  _notify()     { this._save(); this._listeners.forEach(l=>l(this.state)); }
+
+  _load() {
+    try { const r=localStorage.getItem(STORE_KEY); if(r) return JSON.parse(r); } catch(e){}
+    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+  }
+  _save()        { try { localStorage.setItem(STORE_KEY, JSON.stringify(this.state)); } catch(e){} }
+  _loadChk()     { try { const r=localStorage.getItem(CHK_KEY); if(r) return JSON.parse(r); } catch(e){} return []; }
+  _saveChk()     { try { localStorage.setItem(CHK_KEY, JSON.stringify(this.checkpoints)); } catch(e){} }
+
+  // ---- CHECKPOINTS ----
+  saveCheckpoint(label='Checkpoint Automático') {
+    const snap = { id:'c'+Date.now(), ts:new Date().toISOString(), label, data:JSON.parse(JSON.stringify(this.state)) };
+    this.checkpoints.unshift(snap);
+    if (this.checkpoints.length>15) this.checkpoints.pop();
+    this._saveChk();
+    return snap;
+  }
+  restoreCheckpoint(id) {
+    const t=this.checkpoints.find(c=>c.id===id);
+    if (!t) return false;
+    this.saveCheckpoint('Ponto de Segurança (antes de restaurar)');
+    this.state = JSON.parse(JSON.stringify(t.data));
+    this._notify();
+    return true;
+  }
+  deleteCheckpoint(id) { this.checkpoints=this.checkpoints.filter(c=>c.id!==id); this._saveChk(); }
+
+  // ---- EXPORT / IMPORT ----
+  exportJSON() {
+    return JSON.stringify({ version:'1.1', exportedAt:new Date().toISOString(),
+      subjects:this.state.subjects, schedule:this.state.schedule,
+      nightTime:this.state.stats.nightTime }, null, 2);
+  }
+  importJSON(txt, mode='replace') {
+    const d=JSON.parse(txt);
+    if (!Array.isArray(d.subjects)) throw new Error('Formato inválido');
+    this.saveCheckpoint('Backup antes de importar');
+    if (mode==='replace') {
+      this.state.subjects = d.subjects;
+      if (d.schedule) this.state.schedule = d.schedule;
+      if (d.nightTime) this.state.stats.nightTime = d.nightTime;
+    } else {
+      d.subjects.forEach(sub=>{
+        const ex=this.state.subjects.find(s=>s.id===sub.id||s.name.toLowerCase()===sub.name.toLowerCase());
+        if (!ex) this.state.subjects.push(sub);
+      });
+    }
+    this._notify();
+  }
+
+  // ---- SUBJECTS ----
+  addSubject(data) {
+    this.saveCheckpoint('Adicionou matéria: '+data.name);
+    const s={ id:'s'+Date.now(), name:data.name, color:data.color||COLORS[0], mode:data.mode||'simple',
+              status:'active', topics:data.topics||[], topicIdx:0 };
+    this.state.subjects.push(s);
+    this._notify();
+    return s;
+  }
+  updateSubject(id, patch) {
+    const i=this.state.subjects.findIndex(s=>s.id===id);
+    if (i!==-1) { Object.assign(this.state.subjects[i], patch); this._notify(); }
+  }
+  togglePause(id) {
+    const s=this.state.subjects.find(x=>x.id===id);
+    if (s) { s.status = s.status==='active'?'paused':'active'; this._notify(); }
+  }
+  deleteSubject(id) {
+    this.saveCheckpoint('Excluiu matéria');
+    this.state.subjects = this.state.subjects.filter(s=>s.id!==id);
+    Object.keys(this.state.schedule.days).forEach(d=>{
+      this.state.schedule.days[d] = this.state.schedule.days[d].filter(x=>x!==id);
+    });
+    this._notify();
+  }
+
+  // ---- TOPICS ----
+  addTopic(subId, title) {
+    const s=this.state.subjects.find(x=>x.id===subId);
+    if (s) { s.topics.push({id:'t'+Date.now(),title,completed:false,lastStudied:null}); this._notify(); }
+  }
+  moveTopic(subId, from, to) {
+    const s=this.state.subjects.find(x=>x.id===subId);
+    if (!s) return;
+    const [m]=s.topics.splice(from,1);
+    s.topics.splice(to,0,m);
+    this._notify();
+  }
+  deleteTopic(subId, topicId) {
+    const s=this.state.subjects.find(x=>x.id===subId);
+    if (s) { s.topics=s.topics.filter(t=>t.id!==topicId); this._notify(); }
+  }
+
+  // ---- SCHEDULE ----
+  updateSchedule(days, maxPerDay) {
+    this.saveCheckpoint('Grade semanal alterada');
+    this.state.schedule.days = days;
+    if (maxPerDay!=null) this.state.schedule.maxPerDay = parseInt(maxPerDay)||2;
+    this._notify();
+  }
+  autoDraw() {
+    this.saveCheckpoint('Sorteio automático');
+    const active=this.state.subjects.filter(s=>s.status==='active');
+    const max=this.state.schedule.maxPerDay||2;
+    const newDays={0:[],1:[],2:[],3:[],4:[],5:[],6:[]};
+    if (!active.length) { this.state.schedule.days=newDays; this._notify(); return; }
+    // Distribute evenly
+    let pool=[];
+    for (let d=0;d<7;d++) {
+      if (!pool.length) pool=[...active.map(s=>s.id)].sort(()=>Math.random()-.5);
+      const n=Math.min(max,pool.length);
+      for (let i=0;i<n;i++) newDays[d].push(pool.pop());
+    }
+    this.state.schedule.days=newDays;
+    this._notify();
+  }
+
+  // ---- STUDY COMPLETION & SPACED REPETITION ----
+  completeStudy(subjectId, minutes=45) {
+    const today=todayStr();
+    const sub=this.state.subjects.find(s=>s.id===subjectId);
+    if (!sub) return;
+
+    let topic='Estudo Geral';
+    if (sub.mode==='detailed' && sub.topics.length) {
+      const idx=sub.topicIdx % sub.topics.length;
+      const t=sub.topics[idx];
+      topic=t.title;
+      t.completed=true;
+      t.lastStudied=today;
+      sub.topicIdx=(idx+1)%sub.topics.length;
+    }
+
+    this.state.logs.push({id:'l'+Date.now(), date:today, subjectId, topic, minutes, completedAt:new Date().toISOString()});
+
+    const nt=this.state.stats.nightTime||'22:00';
+    [3,7,15,21].forEach(days=>{
+      const due=new Date(); due.setDate(due.getDate()+days);
+      this.state.reviews.push({
+        id:'r'+Date.now()+'_'+days, subjectId, topic,
+        originalDate:today, dueDate:due.toISOString().split('T')[0],
+        scheduledTime:nt, intervalDays:days, status:'pending'
+      });
+    });
+
+    this._updateStreak(today, minutes);
+    this._checkAchievements();
+    this._notify();
+  }
+
+  // ---- REVIEWS ----
+  completeReview(id) {
+    const r=this.state.reviews.find(x=>x.id===id);
+    if (!r) return;
+    r.status='completed'; r.completedAt=new Date().toISOString();
+    this._updateStreak(todayStr(), 15);
+    this._checkAchievements();
+    this._notify();
+  }
+  postponeReview(id) {
+    const r=this.state.reviews.find(x=>x.id===id);
+    if (!r) return;
+    const d=new Date(r.dueDate+'T00:00:00'); d.setDate(d.getDate()+1);
+    r.dueDate=d.toISOString().split('T')[0]; r.status='postponed';
+    this._notify();
+  }
+  missReview(id) {
+    const r=this.state.reviews.find(x=>x.id===id);
+    if (r) { r.status='missed'; this._notify(); }
+  }
+
+  // ---- STREAK ----
+  _updateStreak(today, mins) {
+    const st=this.state.stats;
+    st.totalMin=(st.totalMin||0)+mins;
+    if (!st.lastStudyDate) { st.streak=1; st.lastStudyDate=today; }
+    else {
+      const diff=daysDiff(st.lastStudyDate, today);
+      if (diff===1) { st.streak++; st.lastStudyDate=today; }
+      else if (diff===0) { /* same day */ }
+      else { st.streak=1; st.lastStudyDate=today; }
+    }
+    if (st.streak>(st.bestStreak||0)) st.bestStreak=st.streak;
+  }
+  _checkAchievements() {
+    const s=this.state.stats;
+    const doneRevs=this.state.reviews.filter(r=>r.status==='completed').length;
+    const hour=new Date().getHours();
+    const ach=this.state.achievements;
+    const unlock=(id,cond)=>{ const a=ach.find(x=>x.id===id); if(a&&!a.at&&cond) a.at=new Date().toISOString(); };
+    unlock('a1', this.state.logs.length>=1);
+    unlock('a2', s.streak>=7);
+    unlock('a3', doneRevs>=15);
+    unlock('a4', hour>=22 && doneRevs>=1);
+    unlock('a5', s.streak>=30);
+  }
+
+  streakAtRisk() {
+    const s=this.state.stats;
+    if (s.streak>0 && s.lastStudyDate!==todayStr()) return true;
+    return false;
+  }
+  randomQuote() { return QUOTES[Math.floor(Math.random()*QUOTES.length)]; }
+}
+
+/* ---- Helpers ---- */
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function daysDiff(a,b) {
+  const da=new Date(a+'T00:00:00'), db=new Date(b+'T00:00:00');
+  return Math.round((db-da)/(1000*60*60*24));
+}
+function fmtDate(str) {
+  return new Date(str+'T00:00:00').toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+}
+function fmtDateTime(iso) {
+  return new Date(iso).toLocaleString('pt-BR',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+const store = new Store();
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+function toast(msg, type='info') {
+  const c=document.getElementById('toast-container');
+  const el=document.createElement('div');
+  el.className='toast t-'+type;
+  const ico=type==='success'?'✅':type==='warn'?'⚠️':type==='err'?'❌':'ℹ️';
+  el.innerHTML=`<span>${ico}</span><span>${msg}</span>`;
+  c.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(110%)'; el.style.transition='all .3s'; setTimeout(()=>el.remove(),310); }, 3600);
+}
+
+/* =========================================================
+   ROUTER
+   ========================================================= */
+let currentView = 'dashboard';
+
+function switchView(name) {
+  currentView = name;
+  // Sidebar highlight
+  document.querySelectorAll('#sidebar-nav li').forEach(li=>{
+    li.classList.toggle('active', li.dataset.nav===name);
+  });
+  // Mobile highlight
+  document.querySelectorAll('#mob-nav button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.view===name);
+  });
+  renderView();
+  window.scrollTo(0,0);
+}
+
+function renderView() {
+  const vc=document.getElementById('view-container');
+  switch(currentView) {
+    case 'dashboard':   renderDashboard(vc); break;
+    case 'weekly':      renderWeekly(vc);    break;
+    case 'subjects':    renderSubjects(vc);  break;
+    case 'reviews':     renderReviews(vc);   break;
+    case 'checkpoints': renderCheckpoints(vc); break;
+    case 'stats':       renderStats(vc);     break;
+    default:            renderDashboard(vc);
+  }
+  checkStreakAlert();
+}
+
+function checkStreakAlert() {
+  document.getElementById('alert-bar').style.display = store.streakAtRisk() ? 'flex' : 'none';
+}
+
+/* =========================================================
+   VIEW: DASHBOARD
+   ========================================================= */
+function renderDashboard(el) {
+  const st=store.state;
+  const today=new Date();
+  const dow=(today.getDay()+6)%7; // Mon=0
+  const tStr=todayStr();
+
+  const subIds=st.schedule.days[dow]||[];
+  const subs=subIds.map(id=>st.subjects.find(s=>s.id===id)).filter(s=>s&&s.status==='active');
+
+  const revToday=st.reviews.filter(r=>r.dueDate<=tStr&&r.status==='pending');
+
+  el.innerHTML=`
+    <div class="vheader">
+      <div>
+        <h1>Dashboard – Hoje</h1>
+        <p>${today.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
+      </div>
+    </div>
+    <div class="vcontent">
+      <div class="grid grid-12">
+        <!-- Motivation Banner -->
+        <div class="card moti-banner gc-12">
+          <div class="moti-quote">${store.randomQuote()}</div>
+          <div class="streak-row">
+            <div class="sbox">
+              <div class="flame">🔥</div>
+              <div>
+                <div class="snum" style="color:#f59e0b">${st.stats.streak||0}</div>
+                <div class="slabel">Dias de Sequência</div>
+              </div>
+            </div>
+            <div class="sbox">
+              <div class="flame" style="animation-delay:.5s">🏆</div>
+              <div>
+                <div class="snum" style="color:#10b981">${st.stats.bestStreak||0}</div>
+                <div class="slabel">Maior Recorde</div>
+              </div>
+            </div>
+            <div class="sbox">
+              <div class="flame" style="animation-delay:1s;filter:hue-rotate(180deg)">⏱️</div>
+              <div>
+                <div class="snum" style="color:#8b5cf6">${Math.round((st.stats.totalMin||0)/60)}h</div>
+                <div class="slabel">Horas Estudadas</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Matérias do Dia -->
+        <div class="gc-7">
+          <div class="card">
+            <div class="card-hd">
+              <span class="card-title">📚 Matérias do Dia (${DAY_NAMES[dow]})</span>
+              <span class="chip">${subs.length} matéria(s)</span>
+            </div>
+            ${subs.length===0?`
+              <div class="empty-state">
+                <p>Nenhuma matéria agendada hoje.</p>
+                <button class="btn btn-secondary btn-sm" style="margin-top:.75rem" onclick="switchView('weekly')">Configurar Grade →</button>
+              </div>
+            `:subs.map(s=>{
+              let tl='Estudo geral (modo simples)';
+              if (s.mode==='detailed'&&s.topics.length) {
+                const t=s.topics[s.topicIdx%s.topics.length];
+                tl=`Hoje: "${t.title}"`;
+              }
+              return `
+              <div class="sub-item" style="--sc:${s.color}">
+                <div>
+                  <h3>${s.name}</h3>
+                  <div class="topic-chip">📖 ${tl}</div>
+                </div>
+                <div class="actions">
+                  <button class="btn btn-primary btn-sm" onclick="doCompleteStudy('${s.id}')">✓ Concluir</button>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+
+        <!-- Revisões Noturnas -->
+        <div class="gc-5">
+          <div class="card night-card">
+            <div class="card-hd">
+              <span class="card-title"><span class="night-chip">🌙 ${st.stats.nightTime||'22:00'}</span> Revisões Hoje</span>
+              <span class="chip">${revToday.length} pendente(s)</span>
+            </div>
+            ${revToday.length===0?`
+              <div class="empty-state">
+                <p>🎉 Nenhuma revisão noturna pendente!</p>
+                <p style="font-size:.77rem;margin-top:.4rem;color:var(--txt3)">Revisões surgem nos dias 3, 7, 15 e 21 após concluir uma matéria.</p>
+              </div>
+            `:revToday.map(r=>{
+              const s=st.subjects.find(x=>x.id===r.subjectId);
+              const sname=s?s.name:'—'; const scol=s?s.color:'var(--accent)';
+              return `
+              <div class="rev-item" style="border-left:4px solid ${scol}">
+                <div>
+                  <div style="font-weight:700;font-size:.9rem">${sname}</div>
+                  <div style="font-size:.82rem;color:var(--txt2)">${r.topic}</div>
+                  <div class="review-interval-tag">+${r.intervalDays} dias · ${r.scheduledTime}</div>
+                </div>
+                <div style="display:flex;gap:.35rem;flex-wrap:wrap">
+                  <button class="btn btn-success btn-xs" onclick="doCompleteReview('${r.id}')">✓</button>
+                  <button class="btn btn-secondary btn-xs" onclick="doPostponeReview('${r.id}')">+1d</button>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+
+      </div>
+    </div>`;
+}
+
+function doCompleteStudy(id) {
+  store.completeStudy(id,45);
+  toast('Estudo concluído! 4 revisões espaçadas foram agendadas.','success');
+  renderView();
+}
+function doCompleteReview(id) { store.completeReview(id); toast('Revisão concluída! 🧠','success'); renderView(); }
+function doPostponeReview(id) { store.postponeReview(id); toast('Revisão adiada para amanhã.','warn'); renderView(); }
+
+/* =========================================================
+   VIEW: GRADE SEMANAL
+   ========================================================= */
+let dragSubId=null;
+
+function renderWeekly(el) {
+  const st=store.state;
+  const active=st.subjects.filter(s=>s.status==='active');
+  const max=st.schedule.maxPerDay||2;
+  const today=new Date();
+  const todayDow=(today.getDay()+6)%7;
+
+  el.innerHTML=`
+    <div class="vheader">
+      <div>
+        <h1>Grade Semanal de Estudos</h1>
+        <p>Arraste matérias para os dias ou use o Sorteio Automático.</p>
+      </div>
+      <div class="vactions">
+        <label style="font-size:.83rem;font-weight:700">Máx/dia:</label>
+        <select class="finput" id="sel-max" style="width:auto;padding:.4rem .7rem" onchange="changeMax(this.value)">
+          ${[1,2,3,4,5].map(n=>`<option value="${n}"${n===max?' selected':''}>${n}</option>`).join('')}
+        </select>
+        <button class="btn btn-primary" onclick="doAutoDraw()">🎲 Sortear</button>
+        <button class="btn btn-secondary" onclick="clearSchedule()">🗑️ Limpar</button>
+      </div>
+    </div>
+    <div class="vcontent">
+      <!-- Pool of subjects -->
+      <div class="card" style="margin-bottom:1.25rem">
+        <div class="card-hd"><span class="card-title">Matérias Disponíveis</span><span class="chip" style="color:var(--txt2);font-size:.72rem">Arraste para os dias abaixo</span></div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          ${active.length===0?'<span style="color:var(--txt3);font-size:.85rem">Nenhuma matéria ativa. Cadastre em Matérias & Assuntos.</span>':''}
+          ${active.map(s=>`
+            <span class="drag-card" draggable="true" data-subid="${s.id}" style="--sc:${s.color};cursor:grab;font-size:.82rem;padding:.35rem .75rem;border-radius:999px"
+              ondragstart="onDragStart(event,'${s.id}')" ondragend="onDragEnd(event)">
+              ${s.name}
+            </span>`).join('')}
+        </div>
+      </div>
+
+      <!-- Weekly grid -->
+      <div class="week-grid">
+        ${DAY_NAMES.map((name,d)=>{
+          const ids=st.schedule.days[d]||[];
+          const daySubs=ids.map(id=>st.subjects.find(s=>s.id===id)).filter(s=>s&&s.status==='active');
+          const isToday=d===todayDow;
+          return `
+          <div class="day-col${isToday?' today-col':''}" data-day="${d}"
+            ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,${d})">
+            <div class="day-hd">
+              <span class="day-name">${DAY_SHORT[d]}${isToday?' 👈':''}</span>
+              <span class="chip" style="${daySubs.length>=max?'color:var(--danger)':''}">${daySubs.length}/${max}</span>
+            </div>
+            <div class="day-sub-list">
+              ${daySubs.map(s=>`
+                <div class="drag-card" draggable="true" data-subid="${s.id}" style="--sc:${s.color}"
+                  ondragstart="onDragStart(event,'${s.id}')" ondragend="onDragEnd(event)">
+                  <span style="font-size:.82rem">${s.name}</span>
+                  <button onclick="removeFromDay('${s.id}',${d})" style="background:none;border:none;color:var(--txt3);cursor:pointer;font-size:1rem;line-height:1;padding:0" title="Remover">&times;</button>
+                </div>`).join('')}
+              ${daySubs.length===0?`<div class="day-drop-zone">Arraste aqui</div>`:''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+function changeMax(v) { store.state.schedule.maxPerDay=parseInt(v)||2; store._save(); renderView(); }
+function doAutoDraw() { store.autoDraw(); toast('Grade sorteada e fixada!','success'); renderView(); }
+function clearSchedule() {
+  store.saveCheckpoint('Limpou grade semanal');
+  store.state.schedule.days={0:[],1:[],2:[],3:[],4:[],5:[],6:[]};
+  store._save(); renderView();
+}
+function removeFromDay(subId,day) {
+  const d=store.state.schedule.days;
+  d[day]=(d[day]||[]).filter(id=>id!==subId);
+  store._save(); renderView();
+}
+
+function onDragStart(ev,id) { dragSubId=id; ev.currentTarget.style.opacity='.45'; }
+function onDragEnd(ev) { ev.currentTarget.style.opacity='1'; dragSubId=null; }
+function onDragOver(ev) { ev.preventDefault(); ev.currentTarget.closest('.day-col').classList.add('drag-over'); }
+function onDragLeave(ev) { ev.currentTarget.closest('.day-col').classList.remove('drag-over'); }
+function onDrop(ev,day) {
+  ev.preventDefault();
+  const col=ev.currentTarget.closest('.day-col');
+  col.classList.remove('drag-over');
+  if (!dragSubId) return;
+  const d=store.state.schedule;
+  const list=d.days[day]||[];
+  if (list.length>=(d.maxPerDay||2)) { toast(`Limite de ${d.maxPerDay} matérias por dia atingido!`,'warn'); return; }
+  if (!list.includes(dragSubId)) { list.push(dragSubId); d.days[day]=list; store._save(); renderView(); }
+}
+
+/* =========================================================
+   VIEW: MATÉRIAS & ASSUNTOS
+   ========================================================= */
+function renderSubjects(el) {
+  const st=store.state;
+  el.innerHTML=`
+    <div class="vheader">
+      <div>
+        <h1>Matérias &amp; Assuntos</h1>
+        <p>Cadastre matérias no Modo Simples ou Detalhado (sequência de tópicos).</p>
+      </div>
+      <div class="vactions">
+        <button class="btn btn-primary" onclick="openAddModal()">+ Nova Matéria</button>
+      </div>
+    </div>
+    <div class="vcontent">
+      <div class="subs-grid">
+        ${st.subjects.length===0?'<div class="empty-state gc-12"><p>Nenhuma matéria. Clique em "+ Nova Matéria".</p></div>':''}
+        ${st.subjects.map(s=>{
+          const isPaused=s.status==='paused';
+          const total=s.topics.length;
+          const done=s.topics.filter(t=>t.completed).length;
+          return `
+          <div class="sub-manage-card" style="--sc:${s.color};${isPaused?'opacity:.6':''}">
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;margin-bottom:.5rem">
+                <h3 style="font-weight:800;font-size:1rem;display:flex;align-items:center;gap:.45rem">
+                  <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${s.color};flex-shrink:0"></span>
+                  ${s.name}
+                </h3>
+                <span class="mode-tag ${s.mode==='simple'?'tag-s':'tag-d'}">${s.mode==='simple'?'Simples':'Detalhado'}</span>
+              </div>
+              ${isPaused?'<span class="tag-paused">⏸️ Pausada</span>':''}
+              ${s.mode==='detailed'?`
+                <div style="margin:.65rem 0">
+                  <div style="display:flex;justify-content:space-between;font-size:.77rem;color:var(--txt2);margin-bottom:.3rem">
+                    <span>Progresso dos Assuntos</span><span>${done}/${total}</span>
+                  </div>
+                  <div class="prog-bar-wrap">
+                    <div class="prog-bar" style="width:${total?Math.round(done/total*100):0}%;background:${s.color}"></div>
+                  </div>
+                </div>
+                <label style="font-size:.75rem;font-weight:800;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em">Assuntos (em ordem):</label>
+                <ul class="topic-list" style="margin-top:.3rem">
+                  ${total===0?'<li style="color:var(--txt3);font-style:italic;border:none">Nenhum assunto ainda.</li>':''}
+                  ${s.topics.map((t,i)=>`
+                    <li style="${t.completed?'opacity:.55;text-decoration:line-through':''}">
+                      <span title="${t.title}">${i===s.topicIdx%Math.max(total,1)?'👉 ':''}${t.title}</span>
+                      <div style="display:flex;gap:0;flex-shrink:0">
+                        ${i>0?`<button class="topic-move-btn" title="Mover para cima" onclick="doMoveTopic('${s.id}',${i},${i-1})">▲</button>`:'<span style="width:18px"></span>'}
+                        ${i<total-1?`<button class="topic-move-btn" title="Mover para baixo" onclick="doMoveTopic('${s.id}',${i},${i+1})">▼</button>`:'<span style="width:18px"></span>'}
+                        <button class="topic-move-btn" title="Excluir assunto" onclick="doDeleteTopic('${s.id}','${t.id}')" style="color:var(--danger);margin-left:.25rem">&times;</button>
+                      </div>
+                    </li>`).join('')}
+                </ul>
+              `:`<p style="font-size:.83rem;color:var(--txt2);margin-top:.4rem">Estudo geral sem sequência de tópicos.</p>`}
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:.75rem;flex-wrap:wrap;gap:.4rem">
+              <button class="btn btn-secondary btn-sm" onclick="doTogglePause('${s.id}')">${isPaused?'▶️ Reativar':'⏸️ Pausar'}</button>
+              <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+                ${s.mode==='detailed'?`<button class="btn btn-outline btn-sm" onclick="promptAddTopic('${s.id}')">+ Assunto</button>`:''}
+                <button class="btn btn-danger btn-sm" onclick="doDeleteSub('${s.id}')">Excluir</button>
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- Add Subject Modal -->
+    <div class="overlay" id="modal-add-sub">
+      <div class="modal">
+        <div class="modal-hd">
+          <h3>Cadastrar Nova Matéria</h3>
+          <button class="modal-close" onclick="closeModal('modal-add-sub')">&times;</button>
+        </div>
+        <form onsubmit="submitAddSubject(event)">
+          <div class="modal-body">
+            <div class="fgroup">
+              <label class="flabel">Nome da Matéria *</label>
+              <input id="add-name" class="finput" type="text" placeholder="ex: Matemática, Direito..." required>
+            </div>
+            <div class="fgroup">
+              <label class="flabel">Cor de Identificação</label>
+              <div class="color-picker-row" id="color-picker">
+                ${COLORS.map((c,i)=>`<div class="color-dot${i===0?' selected':''}" data-col="${c}" style="background:${c}" onclick="selectColor(this)"></div>`).join('')}
+              </div>
+            </div>
+            <div class="fgroup">
+              <label class="flabel">Modo de Estudo</label>
+              <select id="add-mode" class="finput" onchange="toggleTopicArea(this.value)">
+                <option value="simple">Modo Simples (apenas o nome da matéria)</option>
+                <option value="detailed">Modo Detalhado (nome + lista de assuntos)</option>
+              </select>
+            </div>
+            <div class="fgroup" id="area-topics" style="display:none">
+              <label class="flabel">Assuntos / Tópicos (um por linha)</label>
+              <textarea id="add-topics" class="finput" placeholder="Frações&#10;Equações do 2º Grau&#10;Trigonometria"></textarea>
+              <small style="color:var(--txt3);font-size:.73rem">Cada sessão de estudo avançará automaticamente para o próximo assunto.</small>
+            </div>
+          </div>
+          <div class="modal-ft">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-add-sub')">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar Matéria</button>
+          </div>
+        </form>
+      </div>
+    </div>`;
+}
+
+function openAddModal() { openModal('modal-add-sub'); }
+function toggleTopicArea(v) { document.getElementById('area-topics').style.display=v==='detailed'?'block':'none'; }
+function selectColor(el) {
+  document.querySelectorAll('#color-picker .color-dot').forEach(d=>d.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function submitAddSubject(ev) {
+  ev.preventDefault();
+  const name=document.getElementById('add-name').value.trim();
+  const mode=document.getElementById('add-mode').value;
+  const colorEl=document.querySelector('#color-picker .selected');
+  const color=colorEl?colorEl.dataset.col:COLORS[0];
+  let topics=[];
+  if (mode==='detailed') {
+    const raw=document.getElementById('add-topics').value;
+    topics=raw.split('\n').filter(t=>t.trim()).map(t=>({
+      id:'t'+Date.now()+Math.random().toString(36).slice(2,6),
+      title:t.trim(), completed:false, lastStudied:null
+    }));
+  }
+  store.addSubject({name,color,mode,topics});
+  toast('Matéria cadastrada!','success');
+  closeModal('modal-add-sub');
+  renderView();
+}
+function doTogglePause(id) { store.togglePause(id); renderView(); }
+function doDeleteSub(id) {
+  if (!confirm('Excluir esta matéria permanentemente?')) return;
+  store.deleteSubject(id); toast('Matéria excluída.','info'); renderView();
+}
+function promptAddTopic(subId) {
+  const t=prompt('Nome do novo assunto:');
+  if (t&&t.trim()) { store.addTopic(subId,t.trim()); toast('Assunto adicionado!','success'); renderView(); }
+}
+function doMoveTopic(subId,from,to) { store.moveTopic(subId,from,to); renderView(); }
+function doDeleteTopic(subId,topicId) {
+  if (!confirm('Remover este assunto?')) return;
+  store.deleteTopic(subId,topicId); renderView();
+}
+
+/* =========================================================
+   VIEW: REVISÕES ESPAÇADAS
+   ========================================================= */
+function renderReviews(el) {
+  const st=store.state;
+  const tStr=todayStr();
+
+  // Group by date
+  const groups={};
+  st.reviews.forEach(r=>{
+    if (!groups[r.dueDate]) groups[r.dueDate]=[];
+    groups[r.dueDate].push(r);
+  });
+  const dates=Object.keys(groups).sort();
+
+  el.innerHTML=`
+    <div class="vheader">
+      <div>
+        <h1>Revisões Espaçadas</h1>
+        <p>Algoritmo 3/7/15/21 dias · horário noturno a partir das <strong>${st.stats.nightTime||'22:00'}</strong></p>
+      </div>
+      <div class="vactions">
+        <label style="font-size:.83rem;font-weight:700">🌙 Horário:</label>
+        <input type="time" id="night-time-input" class="finput" style="width:auto;padding:.38rem .7rem" value="${st.stats.nightTime||'22:00'}" onchange="changeNightTime(this.value)">
+      </div>
+    </div>
+    <div class="vcontent">
+      <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,rgba(168,85,247,.13),rgba(99,102,241,.09));border-color:rgba(168,85,247,.28)">
+        <div style="display:flex;align-items:center;gap:1rem">
+          <span style="font-size:2.25rem">🧠</span>
+          <div>
+            <div style="font-weight:800;font-size:1rem">Como funciona?</div>
+            <p style="font-size:.83rem;color:var(--txt2);margin-top:.2rem">Ao concluir uma matéria, 4 revisões são criadas automaticamente nos dias <strong>3, 7, 15 e 21</strong> a partir de <strong>${st.stats.nightTime||'22:00'}</strong>. Isso maximiza a retenção de longo prazo.</p>
+          </div>
+        </div>
+      </div>
+
+      ${dates.length===0?'<div class="card empty-state"><p>Nenhuma revisão agendada. Conclua uma sessão de estudo no Dashboard para gerar revisões!</p></div>':''}
+
+      ${dates.map(date=>{
+        const isToday=date===tStr;
+        const isOverdue=date<tStr;
+        const revs=groups[date];
+        const pending=revs.filter(r=>r.status==='pending').length;
+        return `
+        <div class="card" style="margin-bottom:1.1rem;${isToday?'border-color:var(--night);box-shadow:0 0 0 1px rgba(168,85,247,.25)':''}">
+          <div class="card-hd">
+            <span class="card-title">
+              ${isToday?'🌙 Hoje':isOverdue?'⚠️ Atrasada':'📅'} – ${fmtDate(date)}
+            </span>
+            <span class="chip" style="${isToday?'background:var(--night);color:#fff':''}">${pending} pendente(s) / ${revs.length} total</span>
+          </div>
+          ${revs.map(r=>{
+            const s=st.subjects.find(x=>x.id===r.subjectId);
+            const sc=s?s.color:'var(--accent)';
+            const isDone=r.status==='completed';
+            const isPost=r.status==='postponed';
+            return `
+            <div class="rev-item${isDone?' rev-done':''}" style="border-left:4px solid ${sc}">
+              <div>
+                <div style="font-weight:700;font-size:.9rem">${s?s.name:'Matéria'}</div>
+                <div style="font-size:.82rem;color:var(--txt2)">${r.topic}</div>
+                <div class="review-interval-tag">+${r.intervalDays} dias · ${r.scheduledTime}${isPost?' · Adiada':''}</div>
+              </div>
+              ${isDone?'<span style="color:var(--success);font-weight:800;font-size:.82rem;white-space:nowrap">✓ Concluída</span>':`
+                <div style="display:flex;gap:.35rem;flex-wrap:wrap">
+                  <button class="btn btn-success btn-sm" onclick="doCompleteReview('${r.id}')">✓ Concluir</button>
+                  <button class="btn btn-secondary btn-sm" onclick="doPostponeReview('${r.id}')">+1d Adiar</button>
+                  <button class="btn btn-danger btn-sm" onclick="doMissReview('${r.id}')">✗</button>
+                </div>`}
+            </div>`;
+          }).join('')}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function changeNightTime(v) {
+  store.state.stats.nightTime=v;
+  store._save();
+  toast(`Horário de revisão: ${v}`,'info');
+  renderView();
+}
+function doMissReview(id) { store.missReview(id); toast('Revisão marcada como perdida.','err'); renderView(); }
+
+/* =========================================================
+   VIEW: CHECKPOINTS & PLANOS
+   ========================================================= */
+function renderCheckpoints(el) {
+  const chks=store.checkpoints;
+  el.innerHTML=`
+    <div class="vheader">
+      <div>
+        <h1>Checkpoints &amp; Planos de Estudo</h1>
+        <p>Pontos de restauração automáticos + exportação/importação de planos em JSON.</p>
+      </div>
+      <div class="vactions">
+        <button class="btn btn-primary" onclick="doManualCheckpoint()">💾 Salvar Checkpoint</button>
+        <button class="btn btn-secondary" onclick="doExport()">📥 Exportar Plano</button>
+        <button class="btn btn-outline" onclick="openModal('modal-import')">📤 Importar Plano</button>
+      </div>
+    </div>
+    <div class="vcontent">
+      <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(139,92,246,.09));border-color:rgba(99,102,241,.28)">
+        <div style="display:flex;align-items:center;gap:1rem">
+          <span style="font-size:2.1rem">💾</span>
+          <div>
+            <div style="font-weight:800;font-size:1rem">Sistema de Checkpoints</div>
+            <p style="font-size:.83rem;color:var(--txt2);margin-top:.2rem">A plataforma salva checkpoints automaticamente antes de mudanças importantes (sorteios, alterações na grade, importações). Clique em <strong>Restaurar</strong> para reverter qualquer alteração.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <span class="card-title">📁 Histórico de Checkpoints</span>
+          <span class="chip">${chks.length}/15 salvo(s)</span>
+        </div>
+        ${chks.length===0?'<div class="empty-state"><p>Nenhum checkpoint salvo ainda.</p></div>':''}
+        <div style="display:flex;flex-direction:column;gap:.65rem">
+          ${chks.map(c=>`
+            <div class="chk-item">
+              <div>
+                <div class="chk-title">${c.label}</div>
+                <div class="chk-meta">🕒 ${fmtDateTime(c.ts)} · Matérias: ${c.data.subjects?c.data.subjects.length:0}</div>
+              </div>
+              <div style="display:flex;gap:.45rem;flex-wrap:wrap">
+                <button class="btn btn-outline btn-sm" onclick="doRestore('${c.id}')">🔄 Restaurar</button>
+                <button class="btn btn-danger btn-sm" onclick="doDeleteChk('${c.id}')">Excluir</button>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="overlay" id="modal-import">
+      <div class="modal">
+        <div class="modal-hd">
+          <h3>Importar Plano de Estudo</h3>
+          <button class="modal-close" onclick="closeModal('modal-import')">&times;</button>
+        </div>
+        <form onsubmit="submitImport(event)">
+          <div class="modal-body">
+            <div class="fgroup">
+              <label class="flabel">Cole aqui o conteúdo JSON do plano:</label>
+              <textarea id="import-json" class="finput" style="min-height:130px;font-family:monospace;font-size:.78rem" placeholder='{"version":"1.1","subjects":[...]}'></textarea>
+            </div>
+            <div class="fgroup">
+              <label class="flabel">Modo de Importação</label>
+              <select id="import-mode" class="finput">
+                <option value="replace">Substituir plano atual completo</option>
+                <option value="merge">Mesclar matérias ao plano existente</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-ft">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-import')">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Importar</button>
+          </div>
+        </form>
+      </div>
+    </div>`;
+}
+
+function doManualCheckpoint() {
+  const label=prompt('Descrição do checkpoint:', 'Checkpoint Manual – '+new Date().toLocaleString('pt-BR'));
+  if (label) { store.saveCheckpoint(label); toast('Checkpoint salvo!','success'); renderView(); }
+}
+function doExport() {
+  const json=store.exportJSON();
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`plano_estudos_${todayStr()}.json`; a.click();
+  URL.revokeObjectURL(url);
+  toast('Plano exportado!','success');
+}
+function submitImport(ev) {
+  ev.preventDefault();
+  const json=document.getElementById('import-json').value;
+  const mode=document.getElementById('import-mode').value;
+  try { store.importJSON(json,mode); toast('Plano importado com sucesso!','success'); closeModal('modal-import'); renderView(); }
+  catch(e) { toast('JSON inválido. Verifique o formato.','err'); }
+}
+function doRestore(id) {
+  if (!confirm('Restaurar este checkpoint? O estado atual será salvo antes da restauração.')) return;
+  store.restoreCheckpoint(id); toast('Restaurado com sucesso!','success'); renderView();
+}
+function doDeleteChk(id) { store.deleteCheckpoint(id); renderView(); }
+
+/* =========================================================
+   VIEW: ESTATÍSTICAS & SELOS
+   ========================================================= */
+function renderStats(el) {
+  const st=store.state;
+  const logs=st.logs||[];
+  const reviews=st.reviews||[];
+  const today=new Date();
+
+  // Heatmap: last 119 days (17 weeks)
+  const act={};
+  logs.forEach(l=>{ act[l.date]=(act[l.date]||0)+1; });
+  reviews.filter(r=>r.status==='completed').forEach(r=>{
+    const d=r.completedAt?r.completedAt.split('T')[0]:r.dueDate;
+    act[d]=(act[d]||0)+1;
+  });
+
+  const cells=[];
+  for (let i=118;i>=0;i--) {
+    const d=new Date(); d.setDate(today.getDate()-i);
+    const ds=d.toISOString().split('T')[0];
+    const c=act[ds]||0;
+    const lv=c===0?0:c===1?1:c===2?2:c<=3?3:4;
+    cells.push({ds,c,lv});
+  }
+
+  const doneRevs=reviews.filter(r=>r.status==='completed').length;
+  const missedRevs=reviews.filter(r=>r.status==='missed').length;
+  const total=doneRevs+missedRevs;
+  const rate=total?Math.round(doneRevs/total*100):100;
+
+  // Subject distribution
+  const subCount={};
+  logs.forEach(l=>{ subCount[l.subjectId]=(subCount[l.subjectId]||0)+1; });
+
+  el.innerHTML=`
+    <div class="vheader">
+      <div>
+        <h1>Estatísticas &amp; Conquistas</h1>
+        <p>Acompanhe seu progresso, heatmap de atividade e selos desbloqueados.</p>
+      </div>
+    </div>
+    <div class="vcontent">
+      <!-- Heatmap -->
+      <div class="card" style="margin-bottom:1.35rem">
+        <div class="card-hd">
+          <span class="card-title">📊 Heatmap de Atividade (últimos 119 dias)</span>
+        </div>
+        <div class="heatmap-wrap">
+          <div class="heatmap-grid">
+            ${cells.map(c=>`<div class="hm-cell" data-lv="${c.lv}" title="${c.ds}: ${c.c} sessão(ões)"></div>`).join('')}
+          </div>
+          <div class="hm-legend">
+            <span>Menos</span>
+            ${[0,1,2,3,4].map(lv=>`<div class="hm-cell" data-lv="${lv}"></div>`).join('')}
+            <span>Mais</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="grid grid-12" style="margin-bottom:1.35rem">
+        <div class="gc-4 card"><div class="stat-box"><div class="stat-num" style="color:var(--accent)">${logs.length}</div><div class="stat-lbl">Sessões Concluídas</div></div></div>
+        <div class="gc-4 card"><div class="stat-box"><div class="stat-num" style="color:var(--success)">${doneRevs}</div><div class="stat-lbl">Revisões Realizadas</div></div></div>
+        <div class="gc-4 card"><div class="stat-box"><div class="stat-num" style="color:var(--warn)">${rate}%</div><div class="stat-lbl">Taxa de Revisões Concluídas</div></div></div>
+      </div>
+
+      <!-- Top Subjects -->
+      ${Object.keys(subCount).length>0?`
+      <div class="card" style="margin-bottom:1.35rem">
+        <div class="card-hd"><span class="card-title">📚 Matérias Mais Estudadas</span></div>
+        ${Object.entries(subCount).sort(([,a],[,b])=>b-a).slice(0,5).map(([id,n])=>{
+          const s=st.subjects.find(x=>x.id===id);
+          const name=s?s.name:'Matéria';
+          const col=s?s.color:'var(--accent)';
+          const max=Math.max(...Object.values(subCount));
+          return `
+          <div style="margin-bottom:.65rem">
+            <div style="display:flex;justify-content:space-between;font-size:.84rem;font-weight:700;margin-bottom:.3rem">
+              <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${col};margin-right:.4rem"></span>${name}</span>
+              <span>${n} sessão(ões)</span>
+            </div>
+            <div class="prog-bar-wrap"><div class="prog-bar" style="width:${Math.round(n/max*100)}%;background:${col}"></div></div>
+          </div>`;
+        }).join('')}
+      </div>`:''}
+
+      <!-- Achievements -->
+      <div class="card">
+        <div class="card-hd"><span class="card-title">🏅 Conquistas e Selos</span><span class="chip">${st.achievements.filter(a=>a.at).length}/${st.achievements.length} desbloqueado(s)</span></div>
+        <div class="badges-grid">
+          ${st.achievements.map(a=>`
+            <div class="badge ${a.at?'unlocked':'locked'}">
+              <div class="badge-ico">${a.icon}</div>
+              <div class="badge-name">${a.name}</div>
+              <div class="badge-desc">${a.desc}</div>
+              ${a.at?`<div class="badge-ok">✓ Desbloqueado</div>`:''}
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
+/* =========================================================
+   MODAL HELPERS
+   ========================================================= */
+function openModal(id) {
+  const el=document.getElementById(id);
+  if (el) el.classList.add('open');
+}
+function closeModal(id) {
+  const el=document.getElementById(id);
+  if (el) el.classList.remove('open');
+}
+// Close modals on backdrop click
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('overlay')) {
+    e.target.classList.remove('open');
+  }
+});
+
+/* =========================================================
+   THEME TOGGLE
+   ========================================================= */
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const curr=document.documentElement.getAttribute('data-theme');
+  const next=curr==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  localStorage.setItem('ef_theme',next);
+  document.getElementById('theme-label').textContent = next==='dark'?'🌙 Modo Escuro':'☀️ Modo Claro';
+});
+
+/* =========================================================
+   NAV SETUP
+   ========================================================= */
+document.querySelectorAll('[data-view]').forEach(btn => {
+  btn.addEventListener('click', () => switchView(btn.getAttribute('data-view')));
+});
+
+/* =========================================================
+   INIT
+   ========================================================= */
+(function init() {
+  const savedTheme=localStorage.getItem('ef_theme')||'dark';
+  document.documentElement.setAttribute('data-theme',savedTheme);
+  document.getElementById('theme-label').textContent=savedTheme==='dark'?'🌙 Modo Escuro':'☀️ Modo Claro';
+  switchView('dashboard');
+})();
+</script>
+</body>
+</html>
