@@ -139,11 +139,8 @@ EstudoFlux/
 Todos os dados são armazenados **exclusivamente no seu navegador** via `localStorage`. Nenhuma informação é enviada para servidores externos.
 ---
 ## 🤝 Tecnologias Utilizadas
-|
- Este projeto foi realizado com o auxílio da IA Gemini 3.6 flash.                                  
-|
+|Este projeto foi realizado com o auxílio da IA Gemini 3.6 flash.                                  
 -------------------------------------
-|
 | HTML5             
 | Estrutura semântica                 
 | CSS3 (Vanilla)    
@@ -152,7 +149,6 @@ Todos os dados são armazenados **exclusivamente no seu navegador** via `localSt
 | Lógica, roteamento, LocalStorage    
 | Google Fonts      
 | Tipografia (Plus Jakarta Sans)      
-|
 ---
 ## 📄 Licença
 Este projeto é de uso pessoal e livre. Sinta-se à vontade para adaptar conforme suas necessidades.
