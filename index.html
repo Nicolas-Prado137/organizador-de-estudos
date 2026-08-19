@@ -57,8 +57,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);line-height:1
 .nav li button:hover{background:rgba(255,255,255,.05);color:var(--txt)}
 .nav li.active button{background:linear-gradient(90deg,rgba(99,102,241,.18),rgba(139,92,246,.08));color:var(--accent);border-left:3px solid var(--accent)}
 .sidebar-foot{border-top:1px solid var(--border);padding-top:.9rem;display:flex;flex-direction:column;gap:.6rem}
-.theme-btn{display:flex;align-items:center;justify-content:space-between;width:100%;padding:.6rem .85rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--txt);font-size:.82rem;font-weight:700;cursor:pointer;transition:var(--tr);font-family:var(--font)}
-.theme-btn:hover{border-color:var(--accent)}
+.theme-btn,.disk-status-btn{display:flex;align-items:center;justify-content:space-between;width:100%;padding:.6rem .85rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--txt);font-size:.82rem;font-weight:700;cursor:pointer;transition:var(--tr);font-family:var(--font)}
+.theme-btn:hover,.disk-status-btn:hover{border-color:var(--accent)}
+.disk-status-active{border-color:var(--success) !important;background:rgba(16,185,129,.12) !important;color:var(--success) !important}
 
 /* ===== MAIN WRAPPER ===== */
 .main{flex:1;display:flex;flex-direction:column;overflow-y:auto}
@@ -241,6 +242,10 @@ input[type="color"]{width:34px;height:34px;border:none;border-radius:50%;cursor:
 </style>
 </head>
 <body>
+
+<!-- Universal Hidden File Input for 100% Reliable File Picker -->
+<input type="file" id="universal-file-input" accept=".json" style="display:none" onchange="onUniversalFileSelected(event)">
+
 <div class="app">
 
   <!-- SIDEBAR -->
@@ -290,6 +295,10 @@ input[type="color"]{width:34px;height:34px;border:none;border-radius:50%;cursor:
       </ul>
     </div>
     <div class="sidebar-foot">
+      <button class="disk-status-btn" id="disk-sync-btn" onclick="toggleDiskLink()">
+        <span id="disk-sync-label">💻 Auto-Salvar no PC</span>
+        <span>💾</span>
+      </button>
       <button class="theme-btn" id="theme-toggle">
         <span id="theme-label">🌙 Modo Escuro</span>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -325,7 +334,7 @@ input[type="color"]{width:34px;height:34px;border:none;border-radius:50%;cursor:
 
 <script>
 /* =========================================================
-   STORE – State Management & LocalStorage
+   STORE – State Management, LocalStorage & Computer File Sync
    ========================================================= */
 const STORE_KEY   = 'ef_state_v2';
 const CHK_KEY     = 'ef_checkpoints_v2';
@@ -383,6 +392,8 @@ class Store {
   constructor() {
     this.state = this._load();
     this.checkpoints = this._loadChk();
+    this.fileHandle = null; // File System Access API Handle (se disponível)
+    this.linkedFileName = null;
     this._listeners = [];
     if (!this.checkpoints.length) this.saveCheckpoint('Estado Inicial');
   }
@@ -394,9 +405,84 @@ class Store {
     try { const r=localStorage.getItem(STORE_KEY); if(r) return JSON.parse(r); } catch(e){}
     return JSON.parse(JSON.stringify(DEFAULT_STATE));
   }
-  _save()        { try { localStorage.setItem(STORE_KEY, JSON.stringify(this.state)); } catch(e){} }
+  
+  _save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(this.state)); } catch(e){}
+    this._saveToLinkedFile();
+  }
+
   _loadChk()     { try { const r=localStorage.getItem(CHK_KEY); if(r) return JSON.parse(r); } catch(e){} return []; }
   _saveChk()     { try { localStorage.setItem(CHK_KEY, JSON.stringify(this.checkpoints)); } catch(e){} }
+
+  // ---- FILE SYSTEM DISK SYNC ----
+  async linkFileOnComputer() {
+    if (window.isSecureContext && 'showSaveFilePicker' in window) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: 'estudoflux_dados.json',
+          types: [{
+            description: 'Arquivo JSON do EstudoFlux',
+            accept: { 'application/json': ['.json'] }
+          }]
+        });
+        this.fileHandle = handle;
+        this.linkedFileName = handle.name;
+        await this._saveToLinkedFile();
+        this._updateDiskUI();
+        toast(`Arquivo "${handle.name}" vinculado! Alterações serão auto-salvas no PC.`, 'success');
+        return true;
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          doExport();
+          toast('Backup baixado para o seu computador!', 'info');
+        }
+      }
+    } else {
+      doExport();
+    }
+    return false;
+  }
+
+  triggerLoadFromComputer() {
+    const input = document.getElementById('universal-file-input');
+    if (input) {
+      input.value = ''; // Reseta seleção anterior
+      input.click();
+    }
+  }
+
+  async _saveToLinkedFile() {
+    if (!this.fileHandle) return;
+    try {
+      const writable = await this.fileHandle.createWritable();
+      const payload = JSON.stringify({
+        version: '1.2',
+        updatedAt: new Date().toISOString(),
+        state: this.state,
+        checkpoints: this.checkpoints
+      }, null, 2);
+      await writable.write(payload);
+      await writable.close();
+      this._updateDiskUI();
+    } catch (e) {
+      console.warn('Não foi possível auto-salvar no arquivo do PC diretamente.', e);
+    }
+  }
+
+  _updateDiskUI() {
+    const btn = document.getElementById('disk-sync-btn');
+    const label = document.getElementById('disk-sync-label');
+    if (!btn || !label) return;
+    if (this.fileHandle || this.linkedFileName) {
+      btn.classList.add('disk-status-active');
+      label.textContent = '💻 Auto-Salvo no PC';
+      btn.title = `Vinculado a: ${this.linkedFileName || (this.fileHandle && this.fileHandle.name) || 'arquivo no PC'}`;
+    } else {
+      btn.classList.remove('disk-status-active');
+      label.textContent = '💻 Auto-Salvar no PC';
+      btn.title = 'Clique para vincular auto-salvamento em um arquivo .json no PC';
+    }
+  }
 
   // ---- CHECKPOINTS ----
   saveCheckpoint(label='Checkpoint Automático') {
@@ -418,20 +504,30 @@ class Store {
 
   // ---- EXPORT / IMPORT ----
   exportJSON() {
-    return JSON.stringify({ version:'1.1', exportedAt:new Date().toISOString(),
+    return JSON.stringify({ version:'1.2', exportedAt:new Date().toISOString(),
       subjects:this.state.subjects, schedule:this.state.schedule,
-      nightTime:this.state.stats.nightTime }, null, 2);
+      nightTime:this.state.stats.nightTime, logs:this.state.logs,
+      reviews:this.state.reviews, stats:this.state.stats, checkpoints:this.checkpoints }, null, 2);
   }
   importJSON(txt, mode='replace') {
     const d=JSON.parse(txt);
-    if (!Array.isArray(d.subjects)) throw new Error('Formato inválido');
+    const stateData = d.state || d; // Suporta tanto backups completos como exportações simples
+    if (!Array.isArray(stateData.subjects)) throw new Error('O arquivo selecionado não contém uma lista válida de matérias.');
+    
     this.saveCheckpoint('Backup antes de importar');
+    
     if (mode==='replace') {
-      this.state.subjects = d.subjects;
-      if (d.schedule) this.state.schedule = d.schedule;
-      if (d.nightTime) this.state.stats.nightTime = d.nightTime;
+      this.state.subjects = stateData.subjects;
+      if (stateData.schedule) this.state.schedule = stateData.schedule;
+      if (stateData.nightTime || (stateData.stats && stateData.stats.nightTime)) {
+        this.state.stats.nightTime = stateData.nightTime || stateData.stats.nightTime;
+      }
+      if (stateData.logs) this.state.logs = stateData.logs;
+      if (stateData.reviews) this.state.reviews = stateData.reviews;
+      if (stateData.stats) this.state.stats = { ...this.state.stats, ...stateData.stats };
+      if (d.checkpoints && Array.isArray(d.checkpoints)) this.checkpoints = d.checkpoints;
     } else {
-      d.subjects.forEach(sub=>{
+      stateData.subjects.forEach(sub=>{
         const ex=this.state.subjects.find(s=>s.id===sub.id||s.name.toLowerCase()===sub.name.toLowerCase());
         if (!ex) this.state.subjects.push(sub);
       });
@@ -609,6 +705,37 @@ function fmtDateTime(iso) {
 
 const store = new Store();
 
+function onUniversalFileSelected(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      store.importJSON(e.target.result, 'replace');
+      store.linkedFileName = file.name;
+      store._updateDiskUI();
+      toast(`Dados do arquivo "${file.name}" carregados com sucesso!`, 'success');
+      renderView();
+    } catch (err) {
+      toast('Erro ao abrir arquivo: ' + err.message, 'err');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function toggleDiskLink() {
+  if (store.fileHandle || store.linkedFileName) {
+    if (confirm('Deseja desvincular o auto-salvamento no computador? (Seus dados continuarão salvos no navegador).')) {
+      store.fileHandle = null;
+      store.linkedFileName = null;
+      store._updateDiskUI();
+      toast('Arquivo desvinculado. Dados sendo salvos apenas no navegador.', 'info');
+    }
+  } else {
+    store.linkFileOnComputer();
+  }
+}
+
 /* =========================================================
    TOAST
    ========================================================= */
@@ -653,6 +780,7 @@ function renderView() {
     default:            renderDashboard(vc);
   }
   checkStreakAlert();
+  store._updateDiskUI();
 }
 
 function checkStreakAlert() {
@@ -678,6 +806,10 @@ function renderDashboard(el) {
       <div>
         <h1>Dashboard – Hoje</h1>
         <p>${today.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
+      </div>
+      <div class="vactions">
+        <button class="btn btn-secondary btn-sm" onclick="store.linkFileOnComputer()">💻 Auto-Salvar no PC</button>
+        <button class="btn btn-outline btn-sm" onclick="store.triggerLoadFromComputer()">📂 Abrir do PC</button>
       </div>
     </div>
     <div class="vcontent">
@@ -1122,19 +1254,44 @@ function doMissReview(id) { store.missReview(id); toast('Revisão marcada como p
    ========================================================= */
 function renderCheckpoints(el) {
   const chks=store.checkpoints;
+  const hasLinkedFile = !!store.fileHandle || !!store.linkedFileName;
+
   el.innerHTML=`
     <div class="vheader">
       <div>
         <h1>Checkpoints &amp; Planos de Estudo</h1>
-        <p>Pontos de restauração automáticos + exportação/importação de planos em JSON.</p>
+        <p>Pontos de restauração + sincronização automática com o seu computador.</p>
       </div>
       <div class="vactions">
+        <button class="btn btn-success" onclick="store.linkFileOnComputer()">💻 ${hasLinkedFile?'Alterar Arquivo no PC':'Auto-Salvar no PC'}</button>
         <button class="btn btn-primary" onclick="doManualCheckpoint()">💾 Salvar Checkpoint</button>
-        <button class="btn btn-secondary" onclick="doExport()">📥 Exportar Plano</button>
-        <button class="btn btn-outline" onclick="openModal('modal-import')">📤 Importar Plano</button>
+        <button class="btn btn-secondary" onclick="doExport()">📥 Exportar JSON</button>
+        <button class="btn btn-outline" onclick="store.triggerLoadFromComputer()">📂 Abrir Arquivo do PC</button>
       </div>
     </div>
     <div class="vcontent">
+      <!-- Computer File Link Status Card -->
+      <div class="card" style="margin-bottom:1.25rem;background:${hasLinkedFile?'linear-gradient(135deg,rgba(16,185,129,.13),rgba(6,182,212,.09))':'linear-gradient(135deg,rgba(245,158,11,.13),rgba(239,68,68,.09))'};border-color:${hasLinkedFile?'rgba(16,185,129,.3)':'rgba(245,158,11,.3)'}">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+          <div style="display:flex;align-items:center;gap:1rem">
+            <span style="font-size:2.25rem">${hasLinkedFile?'💻':'📁'}</span>
+            <div>
+              <div style="font-weight:800;font-size:1rem;color:${hasLinkedFile?'var(--success)':'var(--warn)'}">
+                ${hasLinkedFile?'Auto-Salvamento no PC Ativo!':'Salvar no Computador em Tempo Real'}
+              </div>
+              <p style="font-size:.83rem;color:var(--txt2);margin-top:.2rem">
+                ${hasLinkedFile?`Arquivo vinculado: <strong>${store.linkedFileName || (store.fileHandle && store.fileHandle.name) || 'arquivo no PC'}</strong>. Toda alteração é gravada automaticamente.`:
+                'Clique abaixo para selecionar um arquivo .json no seu computador para carregar seus dados ou vincular o auto-salvamento em tempo real.'}
+              </p>
+            </div>
+          </div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="store.triggerLoadFromComputer()">📂 Selecionar Arquivo no PC</button>
+            ${hasLinkedFile?`<button class="btn btn-secondary" onclick="toggleDiskLink()">🔴 Desvincular</button>`:''}
+          </div>
+        </div>
+      </div>
+
       <div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(139,92,246,.09));border-color:rgba(99,102,241,.28)">
         <div style="display:flex;align-items:center;gap:1rem">
           <span style="font-size:2.1rem">💾</span>
@@ -1176,9 +1333,13 @@ function renderCheckpoints(el) {
         </div>
         <form onsubmit="submitImport(event)">
           <div class="modal-body">
+            <div style="margin-bottom:1.1rem;text-align:center;padding:1rem;background:var(--bg3);border-radius:var(--r)">
+              <button type="button" class="btn btn-primary" onclick="closeModal('modal-import'); store.triggerLoadFromComputer();">📂 Selecionar Arquivo do PC (.json)</button>
+              <div style="margin-top:.5rem;font-size:.78rem;color:var(--txt2)">ou cole o código JSON manualmente abaixo:</div>
+            </div>
             <div class="fgroup">
-              <label class="flabel">Cole aqui o conteúdo JSON do plano:</label>
-              <textarea id="import-json" class="finput" style="min-height:130px;font-family:monospace;font-size:.78rem" placeholder='{"version":"1.1","subjects":[...]}'></textarea>
+              <label class="flabel">Conteúdo JSON do plano:</label>
+              <textarea id="import-json" class="finput" style="min-height:130px;font-family:monospace;font-size:.78rem" placeholder='{"version":"1.2","subjects":[...]}'></textarea>
             </div>
             <div class="fgroup">
               <label class="flabel">Modo de Importação</label>
@@ -1208,7 +1369,7 @@ function doExport() {
   const a=document.createElement('a');
   a.href=url; a.download=`plano_estudos_${todayStr()}.json`; a.click();
   URL.revokeObjectURL(url);
-  toast('Plano exportado!','success');
+  toast('Plano exportado para o arquivo baixado no PC!','success');
 }
 function submitImport(ev) {
   ev.preventDefault();
