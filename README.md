@@ -1,13 +1,28 @@
 # ⚡ EstudoFlux
-> **Plataforma de Organização de Estudos com Revisão Espaçada, Streak e Checkpoints**
-EstudoFlux é uma aplicação web completa para quem quer estudar com consistência e inteligência. Combine planejamento semanal, revisão espaçada científica, gamificação motivacional e backup automático — tudo funcionando direto no navegador, sem instalação.
+> **Plataforma de Organização de Estudos com Revisão Espaçada, Streak, Checkpoints e Auto-Salvamento no PC**
+EstudoFlux é uma aplicação web completa para quem quer estudar com consistência e inteligência. Combine planejamento semanal, revisão espaçada científica, gamificação motivacional, salvamento no navegador e **sincronização com arquivos no computador** — tudo funcionando direto no navegador, sem instalação.
+---
+## 📍 Localização do Projeto no Seu Computador
+O projeto está armazenado na pasta:
+```text
+C:\Users\nprad\OneDrive\Documentos\Estudos
+```
+### 📂 Como abrir no Windows:
+1. Pressione **`Windows + E`** para abrir o **Explorador de Arquivos**.
+2. Cole o caminho `C:\Users\nprad\OneDrive\Documentos\Estudos` na barra de endereço superior e pressione **Enter**.
+3. Dê um **duplo clique em `index.html`** para abrir a plataforma diretamente no seu navegador.
 ---
 ## 🖥️ Como Usar
-Sem instalação, sem servidor, sem internet obrigatória.
-1. Baixe ou clone o repositório.
-2. Abra o arquivo `index.html` diretamente em qualquer navegador moderno (Chrome, Edge, Firefox, Safari).
-3. Pronto — comece a usar!
-> Todos os dados são salvos automaticamente no **LocalStorage** do seu navegador.
+Sem instalação, sem servidor e sem necessidade de conexão com a internet.
+1. Abra o arquivo `index.html` em qualquer navegador (Chrome, Edge, Firefox, Safari).
+2. Pronto — comece a organizar seus estudos!
+---
+## 💻 Salvamento no Computador e no Navegador
+A plataforma oferece salvamento duplo para garantir que você nunca perca seus dados:
+1. **LocalStorage do Navegador (Padrão)**: Todos os seus dados são salvos automaticamente no navegador a cada alteração.
+2. **Auto-Salvamento e Leitura do PC**:
+   - **`📂 Abrir do PC`**: Abre a janela nativa do Windows para você selecionar qualquer arquivo `.json` salvo no computador e carregar seus dados instantaneamente.
+   - **`💻 Auto-Salvar no PC`**: Vincula a plataforma a um arquivo `.json` no seu disco rígido. Toda mudança feita na tela é gravada automaticamente no arquivo local.
 ---
 ## ✨ Funcionalidades
 ### 📚 Cadastro de Matérias
@@ -58,11 +73,6 @@ Sem instalação, sem servidor, sem internet obrigatória.
 - **Importar** — carrega um plano de outro dispositivo ou de um backup:
   - **Substituir** — substitui completamente o plano atual.
   - **Mesclar** — adiciona apenas as matérias novas sem apagar as existentes.
-### 📊 Estatísticas
-- Total de sessões de estudo concluídas.
-- Total de revisões realizadas.
-- Taxa de sucesso em revisões (concluídas vs. perdidas).
-- Ranking das matérias mais estudadas com barra de progresso.
 ---
 ## 🎨 Design
 - **Dark Mode** por padrão — ideal para uso noturno (na hora das revisões).
@@ -75,68 +85,12 @@ Sem instalação, sem servidor, sem internet obrigatória.
 ## 🗂️ Estrutura do Projeto
 ```
 EstudoFlux/
-│
-└── index.html          # Aplicação completa (HTML + CSS + JS em arquivo único)
-```
-> O projeto foi desenvolvido como um **Single File App** — todo o CSS e JavaScript estão embutidos diretamente no `index.html`. Isso garante funcionamento imediato sem necessidade de servidor, build ou dependências externas.
----
-## 💡 Modelo de Dados (LocalStorage)
-|
- Chave              
-|
- Conteúdo                                                         
-|
-|
---------------------
-|
-------------------------------------------------------------------
-|
-|
-`ef_state_v2`
-|
- Estado completo: matérias, grade, revisões, logs, stats, selos  
-|
-|
-`ef_checkpoints_v2`
-|
- Histórico de até 15 snapshots para restauração                  
-|
-|
-`ef_theme`
-|
- Preferência de tema (dark/light)                                
-|
-### Formato do arquivo de exportação (JSON)
-```json
-{
-  "version": "1.1",
-  "exportedAt": "2026-08-19T00:00:00.000Z",
-  "subjects": [...],
-  "schedule": {
-    "maxPerDay": 2,
-    "days": { "0": ["s1","s3"], "1": ["s2","s4"], ... }
-  },
-  "nightTime": "22:00"
-}
-```
----
-## 🔄 Fluxo de Uso Recomendado
-```
-1. Cadastre suas matérias (Simples ou Detalhado)
-        ↓
-2. Configure a Grade Semanal (Sorteio ou Manual)
-        ↓
-3. Acesse o Dashboard diariamente
-        ↓
-4. Conclua as matérias do dia → revisões são agendadas automaticamente
-        ↓
-5. À noite (a partir das 22h), revise os assuntos da seção "Revisões de Hoje"
-        ↓
-6. Mantenha seu Streak! 🔥
+├── index.html          # Aplicação completa (HTML + CSS + JS em arquivo único)
+└── README.md           # Documentação e guia do projeto
 ```
 ---
 ## 🛡️ Privacidade
-Todos os dados são armazenados **exclusivamente no seu navegador** via `localStorage`. Nenhuma informação é enviada para servidores externos.
+Todos os dados são armazenados **exclusivamente no seu computador e navegador**. Nenhuma informação é enviada para servidores externos.
 ---
 ## 🤝 Tecnologias Utilizadas
 |Este projeto foi realizado com o auxílio da IA Gemini 3.6 flash.                                  
