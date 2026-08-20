@@ -2,11 +2,6 @@
 > **Plataforma de Organização de Estudos com Revisão Espaçada, Streak, Checkpoints e Auto-Salvamento no PC**
 EstudoFlux é uma aplicação web completa para quem quer estudar com consistência e inteligência. Combine planejamento semanal, revisão espaçada científica, gamificação motivacional, salvamento no navegador e **sincronização com arquivos no computador** — tudo funcionando direto no navegador, sem instalação.
 ---
-## 📍 Localização do Projeto no Seu Computador
-O projeto está armazenado na pasta:
-```text
-C:\Users\nprad\OneDrive\Documentos\Estudos
-```
 ### 📂 Como abrir no Windows:
 1. Pressione **`Windows + E`** para abrir o **Explorador de Arquivos**.
 2. Cole o caminho `C:\Users\nprad\OneDrive\Documentos\Estudos` na barra de endereço superior e pressione **Enter**.
