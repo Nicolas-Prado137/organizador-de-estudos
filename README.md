@@ -1,5 +1,5 @@
 # ⚡ EstudoFlux
-<<<<<<< HEAD
+
 
 > **Plataforma de Organização de Estudos com Flashcards 3D, Exportação/Importação de Cards, Revisão Espaçada, Streak e Auto-Salvamento no PC**
 
@@ -11,17 +11,9 @@ EstudoFlux é uma aplicação web completa para quem quer estudar com consistên
 ---
 ### 📂 Como abrir no Windows:
 1. Pressione **`Windows + E`** para abrir o **Explorador de Arquivos**.
-2. Cole o caminho `C:\Users\nprad\OneDrive\Documentos\Estudos` na barra de endereço superior e pressione **Enter**.
+2. Cole o caminho na barra de endereço superior e pressione **Enter**.
 3. Dê um **duplo clique em `index.html`** para abrir a plataforma diretamente no seu navegador.
-aff00fe32f9c5e5176930763ab9d2e0eaae915a5
 ---
-
-## 📍 Localização do Projeto no Seu Computador
-
-O projeto está armazenado na pasta:
-```text
-C:\Users\nprad\OneDrive\Documentos\Estudos
-```
 
 ### 📂 Como abrir no Windows:
 1. Pressione **`Windows + E`** para abrir o **Explorador de Arquivos**.
@@ -31,7 +23,6 @@ C:\Users\nprad\OneDrive\Documentos\Estudos
 ---
 
 ## 🖥️ Como Usar
-<<<<<<< HEAD
 
 Sem instalação, sem servidor e sem necessidade de conexão com a internet.
 
@@ -181,4 +172,3 @@ Todos os dados são armazenados **exclusivamente no seu computador e navegador**
 ---
 ## 📄 Licença
 Este projeto é de uso pessoal e livre. Sinta-se à vontade para adaptar conforme suas necessidades.
-aff00fe32f9c5e5176930763ab9d2e0eaae915a5
